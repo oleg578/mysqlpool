@@ -1,18 +1,18 @@
-package storage
+package mysqlpool
 
 import (
 	"database/sql"
 	"fmt"
+	"github.com/go-sql-driver/mysql"
 	"log"
 	"runtime"
-	"github.com/go-sql-driver/mysql"
 )
 
 var (
 	pool *sql.DB
 )
 
-func New(dsn string, maxopencon int, looger *log.Logger) error {
+func New(dsn string, maxopencon int, logger *log.Logger) error {
 	cfg, errCfg := mysql.ParseDSN(dsn)
 	if errCfg != nil {
 		return errCfg
@@ -30,4 +30,5 @@ func New(dsn string, maxopencon int, looger *log.Logger) error {
 	if err := mysql.SetLogger(logger); err != nil {
 		return fmt.Errorf("[ERROR] mysql logger set error: %s", err.Error())
 	}
+	return nil
 }
