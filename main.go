@@ -13,7 +13,7 @@ var (
 	Pool *sql.DB
 )
 
-//New
+//New Pool
 func New(
 	dsn string,
 	maxopencon int,
