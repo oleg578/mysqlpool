@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	pool *sql.DB
+	Pool *sql.DB
 )
 
+//New
 func New(
 	dsn string,
 	maxopencon int,
@@ -27,12 +28,12 @@ func New(
 	if errCn != nil {
 		return errCn
 	}
-	pool = sql.OpenDB(cn)
-	pool.SetMaxIdleConns(runtime.NumCPU())
-	pool.SetMaxOpenConns(maxopencon)
+	Pool = sql.OpenDB(cn)
+	Pool.SetMaxIdleConns(runtime.NumCPU())
+	Pool.SetMaxOpenConns(maxopencon)
 	//set to 0 for reuse connections not recommend
 	//because Pool crashed in long time work (in server for example)
-	pool.SetConnMaxLifetime(lifetime)
+	Pool.SetConnMaxLifetime(lifetime)
 	// redirect mysql errLog to logger
 	if err := mysql.SetLogger(logger); err != nil {
 		return fmt.Errorf("[ERROR] mysql logger set error: %s", err.Error())
