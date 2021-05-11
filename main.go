@@ -1,6 +1,7 @@
 package mysqlpool
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
@@ -9,17 +10,40 @@ import (
 	"time"
 )
 
+//goland:noinspection GoUnusedGlobalVariable
 var (
-	Pool *sql.DB
+	Pool                   *sql.DB
+	MaxAllowedPacketLength uint64
 )
 
+func getMaxAllowedPacketLength() (maxpack uint64) {
+	const (
+		MaxAllowedPacketMysqlDrv = 4194304
+	)
+	q := fmt.Sprint("SHOW VARIABLES LIKE 'max_allowed_packet'")
+	mpname := ""
+	maxpack = 1024
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conn, errCon := Pool.Conn(ctx)
+	if errCon != nil {
+		return
+	}
+	//goland:noinspection GoUnhandledErrorResult
+	defer conn.Close()
+	err := conn.QueryRowContext(ctx, q).Scan(&mpname, &maxpack)
+	if err != nil {
+		maxpack = 1024
+	}
+	if maxpack > MaxAllowedPacketMysqlDrv {
+		maxpack = MaxAllowedPacketMysqlDrv
+	}
+	return
+}
+
 //New Pool
-func New(
-	dsn string,
-	maxopencon int,
-	lifetime time.Duration,
-	logger *log.Logger,
-) error {
+//goland:noinspection GoUnusedExportedFunction
+func New(dsn string, maxopencon int, lifetime time.Duration, logger *log.Logger) error {
 	cfg, errCfg := mysql.ParseDSN(dsn)
 	if errCfg != nil {
 		return errCfg
@@ -38,5 +62,6 @@ func New(
 	if err := mysql.SetLogger(logger); err != nil {
 		return fmt.Errorf("[ERROR] mysql logger set error: %s", err.Error())
 	}
+	MaxAllowedPacketLength = getMaxAllowedPacketLength()
 	return nil
 }
