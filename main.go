@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
 	"log"
 	"runtime"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
 )
 
-//goland:noinspection GoUnusedGlobalVariable
 var (
 	Pool                   *sql.DB
 	MaxAllowedPacketLength uint64
@@ -29,7 +29,6 @@ func getMaxAllowedPacketLength() (maxpack uint64) {
 	if errCon != nil {
 		return
 	}
-	//goland:noinspection GoUnhandledErrorResult
 	defer conn.Close()
 	err := conn.QueryRowContext(ctx, q).Scan(&mpname, &maxpack)
 	if err != nil {
@@ -42,7 +41,6 @@ func getMaxAllowedPacketLength() (maxpack uint64) {
 }
 
 //New Pool
-//goland:noinspection GoUnusedExportedFunction
 func New(dsn string, maxopencon int, lifetime time.Duration, logger *log.Logger) error {
 	cfg, errCfg := mysql.ParseDSN(dsn)
 	if errCfg != nil {
