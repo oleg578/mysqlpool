@@ -60,6 +60,9 @@ func New(dsn string, maxopencon int, lifetime time.Duration, logger *log.Logger)
 	if err := mysql.SetLogger(logger); err != nil {
 		return fmt.Errorf("[ERROR] mysql logger set error: %s", err.Error())
 	}
+	if err := Pool.Ping(); err != nil {
+		return err
+	}
 	MaxAllowedPacketLength = getMaxAllowedPacketLength()
 	return nil
 }
