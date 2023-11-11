@@ -15,8 +15,9 @@ var (
 )
 
 // New Pool
-func New(dsn string, maxopencon int, lifetime time.Duration, logger *log.Logger) error {
+func New(dsn string, maxopencon int, lifetime time.Duration, maxAllowedPacket int, logger *log.Logger) error {
 	cfg, errCfg := mysql.ParseDSN(dsn)
+	cfg.MaxAllowedPacket = maxAllowedPacket
 	if errCfg != nil {
 		return errCfg
 	}
@@ -26,7 +27,6 @@ func New(dsn string, maxopencon int, lifetime time.Duration, logger *log.Logger)
 	}
 	Pool = sql.OpenDB(cn)
 	Pool.SetMaxIdleConns(runtime.NumCPU())
-	Pool.SetMaxOpenConns(maxopencon)
 	//set to 0 for reuse connections not recommend
 	//because Pool crashed in long time work (in server, for example)
 	Pool.SetConnMaxLifetime(lifetime)
