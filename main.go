@@ -26,6 +26,7 @@ func New(dsn string, maxopencon int, lifetime time.Duration, maxAllowedPacket in
 		return errCn
 	}
 	Pool = sql.OpenDB(cn)
+	Pool.SetMaxOpenConns(maxopencon)
 	Pool.SetMaxIdleConns(runtime.NumCPU())
 	//set to 0 for reuse connections not recommend
 	//because Pool crashed in long time work (in server, for example)
