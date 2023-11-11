@@ -17,9 +17,6 @@ var (
 )
 
 func getMaxAllowedPacketLength() (maxpack uint64) {
-	const (
-		MaxAllowedPacketMysqlDrv = 4194304
-	)
 	q := fmt.Sprint("SHOW VARIABLES LIKE 'max_allowed_packet'")
 	mpname := ""
 	maxpack = 1024
@@ -29,18 +26,17 @@ func getMaxAllowedPacketLength() (maxpack uint64) {
 	if errCon != nil {
 		return
 	}
-	defer conn.Close()
+	defer func(conn *sql.Conn) {
+		_ = conn.Close()
+	}(conn)
 	err := conn.QueryRowContext(ctx, q).Scan(&mpname, &maxpack)
 	if err != nil {
 		maxpack = 1024
 	}
-	if maxpack > MaxAllowedPacketMysqlDrv {
-		maxpack = MaxAllowedPacketMysqlDrv
-	}
 	return
 }
 
-//New Pool
+// New Pool
 func New(dsn string, maxopencon int, lifetime time.Duration, logger *log.Logger) error {
 	cfg, errCfg := mysql.ParseDSN(dsn)
 	if errCfg != nil {
@@ -50,6 +46,7 @@ func New(dsn string, maxopencon int, lifetime time.Duration, logger *log.Logger)
 	if errCn != nil {
 		return errCn
 	}
+	MaxAllowedPacketLength = getMaxAllowedPacketLength()
 	Pool = sql.OpenDB(cn)
 	Pool.SetMaxIdleConns(runtime.NumCPU())
 	Pool.SetMaxOpenConns(maxopencon)
@@ -63,6 +60,5 @@ func New(dsn string, maxopencon int, lifetime time.Duration, logger *log.Logger)
 	if err := Pool.Ping(); err != nil {
 		return err
 	}
-	MaxAllowedPacketLength = getMaxAllowedPacketLength()
 	return nil
 }
