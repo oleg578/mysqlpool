@@ -2,7 +2,7 @@ package mysqlpool
 
 import (
 	"database/sql"
-	"fmt"
+	"errors"
 	"log"
 	"runtime"
 	"time"
@@ -15,7 +15,7 @@ var (
 )
 
 // New Pool
-func New(dsn string, maxopencon int, lifetime time.Duration, maxAllowedPacket int, logger *log.Logger) error {
+func New(dsn string, maxOpenCon int, lifetime time.Duration, maxAllowedPacket int, logger *log.Logger) error {
 	cfg, errCfg := mysql.ParseDSN(dsn)
 	cfg.MaxAllowedPacket = maxAllowedPacket
 	if errCfg != nil {
@@ -26,18 +26,18 @@ func New(dsn string, maxopencon int, lifetime time.Duration, maxAllowedPacket in
 		return errCn
 	}
 	Pool = sql.OpenDB(cn)
-	Pool.SetMaxOpenConns(maxopencon)
+	Pool.SetMaxOpenConns(maxOpenCon)
 	Pool.SetMaxIdleConns(runtime.NumCPU())
 	//set to 0 for reuse connections not recommend
 	//because Pool crashed in long time work (in server, for example)
 	Pool.SetConnMaxLifetime(lifetime)
 	// redirect mysql errLog to logger
 	if err := mysql.SetLogger(logger); err != nil {
-		return fmt.Errorf("[ERROR] mysql logger set error: %s", err.Error())
+		return errors.New("[ERROR] mysql logger set error: " + err.Error())
 	}
 	//check Pool created successfully
 	if err := Pool.Ping(); err != nil {
-		return fmt.Errorf("[ERROR] new mysql pool check error: %s", err.Error())
+		return errors.New("[ERROR] new mysql pool check error: " + err.Error())
 	}
 	return nil
 }
