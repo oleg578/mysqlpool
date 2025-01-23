@@ -10,6 +10,8 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
+const MAX_ALLOWED_PACKET = 1073741824 // 1GB
+
 var (
 	Pool *sql.DB
 )
